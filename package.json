@@ -1,0 +1,27 @@
+{
+  "name": "magellan",
+  "version": "1.0.0",
+  "description": "Get navigation directions straight from Discord",
+  "main": "src/magellan.js",
+  "scripts": {
+    "test": "npx standard && nodemon src/magellan.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SchwaIndustries/magellan.git"
+  },
+  "author": "Kalissaac#8199",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/SchwaIndustries/magellan/issues"
+  },
+  "homepage": "https://github.com/SchwaIndustries/magellan#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "standard": "^14.3.4"
+  }
+}
