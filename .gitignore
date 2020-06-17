@@ -86,3 +86,6 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# MapKit private key
+AuthKey_*.p8

@@ -18,8 +18,14 @@
   },
   "homepage": "https://github.com/SchwaIndustries/magellan#readme",
   "dependencies": {
+    "canvas": "^2.6.1",
     "discord.js": "^12.2.0",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "imgur": "^0.3.1",
+    "jsdom": "^16.2.2",
+    "jsonwebtoken": "^8.5.1",
+    "jwa": "^2.0.0",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.4",
