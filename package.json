@@ -4,6 +4,7 @@
   "description": "Get navigation directions straight from Discord",
   "main": "src/magellan.js",
   "scripts": {
+    "start": "node src/magellan.js",
     "test": "npx standard && nodemon src/magellan.js"
   },
   "repository": {
