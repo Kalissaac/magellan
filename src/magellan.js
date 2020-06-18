@@ -293,6 +293,7 @@ client.on('ready', () => {
 
 client.on('message', async message => {
   if (message.author.bot === true || message.mentions.first() !== client.user) return
+  message.channel.startTyping()
 
   let origin
   let destination
@@ -301,32 +302,34 @@ client.on('message', async message => {
   const originFirst = nlp(message.content).match('from [<origin>*] to [<destination>*]').groups()
 
   if (destinationFirst.destination || destinationFirst.origin) {
-    destination = destinationFirst.destination.text()
-    origin = destinationFirst.origin.text()
+    destination = destinationFirst.destination
+    origin = destinationFirst.origin
 
   } else if (originFirst.origin || originFirst.destination) {
-    origin = originFirst.origin.text()
-    destination = originFirst.destination.text()
+    origin = originFirst.origin.toTitleCase().text()
+    destination = originFirst.destination.toTitleCase().text()
 
   } else return
 
   let embed = new Discord.MessageEmbed()
   embed.setTitle('Directions')
   embed.setDescription('Fetching directions from server (may take up to 30 sec.)')
-  embed.addField('Origin', origin.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
-  embed.addField('Destination', destination.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
+  embed.addField('Origin', origin)
+  embed.addField('Destination', destination)
   const reply = await message.reply(embed)
 
   generateRoute(origin, destination)
     .then(async route => {
       embed = await showRouteInEmbed(route, embed)
       reply.edit(embed).catch(console.error)
+      message.channel.stopTyping()
     }).catch(error => {
       error = error.toString().replace(/http\S+/, '[redacted]')
       console.error(error)
       embed.setDescription('Error occured! ' + error)
       embed.setColor('RED')
       reply.edit(embed).catch(console.error)
+      message.channel.stopTyping()
     })
 })
 
