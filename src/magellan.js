@@ -302,14 +302,17 @@ client.on('message', async message => {
   const originFirst = nlp(message.content).match('from [<origin>*] to [<destination>*]').groups()
 
   if (destinationFirst.destination || destinationFirst.origin) {
-    destination = destinationFirst.destination
-    origin = destinationFirst.origin
+    destination = destinationFirst.destination.toTitleCase().text().trim()
+    origin = destinationFirst.origin.toTitleCase().text().trim()
 
   } else if (originFirst.origin || originFirst.destination) {
-    origin = originFirst.origin.toTitleCase().text()
-    destination = originFirst.destination.toTitleCase().text()
+    origin = originFirst.origin.toTitleCase().text().trim()
+    destination = originFirst.destination.toTitleCase().text().trim()
 
   } else return
+
+  origin.replace('?', '')
+  destination.replace('?', '')
 
   let embed = new Discord.MessageEmbed()
   embed.setTitle('Directions')
