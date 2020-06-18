@@ -43,6 +43,8 @@ const { JSDOM } = jsdom
 const Discord = require('discord.js')
 const client = new Discord.Client()
 
+const nlp = require('compromise')
+
 const fetch = require('node-fetch')
 const imgur = require('imgur')
 imgur.setCredentials(IMGUR_EMAIL, IMGUR_PASSWORD, IMGUR_CLIENTID)
@@ -290,34 +292,42 @@ client.on('ready', () => {
 })
 
 client.on('message', async message => {
-  if (message.content.startsWith('directions to')) {
-    // Find directions
-    let parameters = message.content.split(' ')
-    parameters.splice(0, 2)
-    parameters = parameters.join(' ')
-    parameters = parameters.split(' from ')
-    const origin = parameters[1]
-    const destination = parameters[0]
+  if (message.author.bot === true || message.mentions.first() !== client.user) return
 
-    let embed = new Discord.MessageEmbed()
-    embed.setTitle('Directions')
-    embed.setDescription('Fetching directions from server (may take up to 30 sec.)')
-    embed.addField('Origin', origin.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
-    embed.addField('Destination', destination.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
-    const reply = await message.reply(embed)
+  let origin
+  let destination
 
-    generateRoute(origin, destination)
-      .then(async route => {
-        embed = await showRouteInEmbed(route, embed)
-        reply.edit(embed).catch(console.error)
-      }).catch(error => {
-        error = error.toString().replace(/http\S+/, '[redacted]')
-        console.error(error)
-        embed.setDescription('Error occured! ' + error)
-        embed.setColor('RED')
-        reply.edit(embed).catch(console.error)
-      })
-  }
+  const destinationFirst = nlp(message.content).match('to [<destination>*] from [<origin>*]').groups()
+  const originFirst = nlp(message.content).match('from [<origin>*] to [<destination>*]').groups()
+
+  if (destinationFirst.destination || destinationFirst.origin) {
+    destination = destinationFirst.destination.text()
+    origin = destinationFirst.origin.text()
+
+  } else if (originFirst.origin || originFirst.destination) {
+    origin = originFirst.origin.text()
+    destination = originFirst.destination.text()
+
+  } else return
+
+  let embed = new Discord.MessageEmbed()
+  embed.setTitle('Directions')
+  embed.setDescription('Fetching directions from server (may take up to 30 sec.)')
+  embed.addField('Origin', origin.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
+  embed.addField('Destination', destination.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' '))
+  const reply = await message.reply(embed)
+
+  generateRoute(origin, destination)
+    .then(async route => {
+      embed = await showRouteInEmbed(route, embed)
+      reply.edit(embed).catch(console.error)
+    }).catch(error => {
+      error = error.toString().replace(/http\S+/, '[redacted]')
+      console.error(error)
+      embed.setDescription('Error occured! ' + error)
+      embed.setColor('RED')
+      reply.edit(embed).catch(console.error)
+    })
 })
 
 client.login(DISCORD_TOKEN)
