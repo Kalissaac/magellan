@@ -301,6 +301,7 @@ client.on('message', async message => {
   const destinationFirst = nlp(message.content).match('to [<destination>*] from [<origin>*]').groups()
   const originFirst = nlp(message.content).match('from [<origin>*] to [<destination>*]').groups()
 
+  /* eslint-disable padded-blocks */
   if (destinationFirst.destination || destinationFirst.origin) {
     destination = destinationFirst.destination.toTitleCase().text().trim()
     origin = destinationFirst.origin.toTitleCase().text().trim()
@@ -310,6 +311,7 @@ client.on('message', async message => {
     destination = originFirst.destination.toTitleCase().text().trim()
 
   } else return
+  /* eslint-enable padded-blocks */
 
   origin.replace('?', '')
   destination.replace('?', '')
