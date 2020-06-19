@@ -14,3 +14,5 @@ Get navigation directions straight from Discord
 3. Run `npm start` and the bot should be online! You can mention it and ask for directions and it will respond to the best of it's ability.
 
 > @Bot How do I get to 9149 S Sepulveda Blvd, Los Angeles, CA 90045 from Los Angeles International Airport?
+
+![](https://media.giphy.com/media/ZFK3V146hkhd8eJSIq/giphy.gif)
