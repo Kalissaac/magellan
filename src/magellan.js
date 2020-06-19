@@ -78,29 +78,29 @@ const generateRoute = async (origin, destination) => {
     <html>
     <head>
     <meta charset="utf-8">
-    
+
     <script src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js"></script>
-    
+
     <style>
     #map {
         width: 100%;
         height: 900px;
     }
     </style>
-    
+
     </head>
-    
+
     <body>
     <div id="map"></div>
     </body>
-    
-    <script>    
+
+    <script>
     mapkit.init({
         authorizationCallback: function(done) {
             done("${generateToken(MAPKIT_PRIVATEKEY, MAPKIT_KEYID, MAPKIT_TEAMID)}")
         }
     })
-  
+
     const directions = new mapkit.Directions()
     directions.route({
       origin: "${origin}",
@@ -292,7 +292,7 @@ client.on('ready', () => {
 })
 
 client.on('message', async message => {
-  if (message.author.bot === true || message.mentions.first() !== client.user) return
+  if (message.author.bot === true || !message.content.startsWith(`<@!${client.user.id}>`)) return
   message.channel.startTyping()
 
   let origin
@@ -337,3 +337,16 @@ client.on('message', async message => {
 })
 
 client.login(DISCORD_TOKEN)
+
+//
+// ///////////////////////////////////////////////////////////////////// //
+// General error handling
+
+client.on('error', console.error)
+client.on('rateLimit', console.error)
+client.on('shardError', console.error)
+client.on('warn', console.error)
+
+process.on('uncaughtException', console.error)
+process.on('unhandledRejection', console.error)
+process.on('warning', console.error)
