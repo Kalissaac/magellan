@@ -154,11 +154,20 @@ const generateRoute = async (origin, destination) => {
 // ///////////////////////////////////////////////////////////////////// //
 // MapKit Snapshot Generation
 
-if (typeof (Number.prototype.toRad) === 'undefined') {
-  Number.prototype.toRad = function () { return this * Math.PI / 180 } // eslint-disable-line no-extend-native
+/**
+ * Converts a number to radians
+ * @param {number} number Number to convert
+ */
+const numberToRadians = number => {
+  return number * Math.PI / 180
 }
-if (typeof (Number.prototype.toDeg) === 'undefined') {
-  Number.prototype.toDeg = function () { return this * (180 / Math.PI) } // eslint-disable-line no-extend-native
+
+/**
+ * Converts a number to degrees
+ * @param {number} number Number to convert
+ */
+const numberToDegrees = number => {
+  return number * (180 / Math.PI)
 }
 
 /**
@@ -172,12 +181,12 @@ const calculateMapCenterForRoute = (polyline) => {
   const destination = polyline[polyline.length - 1].split(',').map(x => parseFloat(x))
 
   // Longitude difference
-  const dLng = (destination[1] - origin[1]).toRad()
+  const dLng = numberToRadians(destination[1] - origin[1])
 
   // Convert to radians
-  const lat1 = origin[0].toRad()
-  const lat2 = destination[0].toRad()
-  const lng1 = origin[1].toRad()
+  const lat1 = numberToRadians(origin[0])
+  const lat2 = numberToRadians(destination[0])
+  const lng1 = numberToRadians(origin[1])
 
   var bX = Math.cos(lat2) * Math.cos(dLng)
   var bY = Math.cos(lat2) * Math.sin(dLng)
@@ -185,7 +194,7 @@ const calculateMapCenterForRoute = (polyline) => {
   var lng3 = lng1 + Math.atan2(bY, Math.cos(lat1) + bX)
 
   // Return result
-  const centerPoint = [lng3.toDeg(), lat3.toDeg()]
+  const centerPoint = [numberToDegrees(lng3), numberToDegrees(lat3)]
 
   return centerPoint.reverse().join(',')
 }
