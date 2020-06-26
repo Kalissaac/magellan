@@ -53,6 +53,13 @@ imgur.setCredentials(IMGUR_EMAIL, IMGUR_PASSWORD, IMGUR_CLIENTID)
 // ///////////////////////////////////////////////////////////////////// //
 // MapKit Route Generation
 
+/**
+ * Generates a token for use with MapKit JS
+ * @param {string} authKey MapKit Private Key
+ * @param {string} keyId MapKit Key ID
+ * @param {string} teamId Apple Developer Team ID
+ * @param {number} ttl Time (in seconds) until token expiration. Defaults to 2 hours.
+ */
 const generateToken = (authKey, keyId, teamId, ttl = 120 * 60) => {
   const payload = {
     iss: teamId,
@@ -70,6 +77,12 @@ const generateToken = (authKey, keyId, teamId, ttl = 120 * 60) => {
   return jwt.sign(payload, authKey, { header })
 }
 
+/**
+ * Generates and returns a MapKit route
+ * @param {string} origin Where the directions should start
+ * @param {string} destination Where the directions should end
+ * @returns {Promise<mapkit.Route>} A MapKit Route object
+ */
 const generateRoute = async (origin, destination) => {
   return new Promise((resolve, reject) => {
     /* eslint-disable no-new */
@@ -148,7 +161,13 @@ if (typeof (Number.prototype.toDeg) === 'undefined') {
   Number.prototype.toDeg = function () { return this * (180 / Math.PI) } // eslint-disable-line no-extend-native
 }
 
-const calculateMapCenterForRoute = (polyline, route) => {
+/**
+ * Calculates the absolute center between the origin and destination
+ * points of a MapKit polyline.
+ * @param {mapkit.PolylineOverlay} polyline A MapKit polyline overlay
+ * @returns {string} Latitude-longitude coordinate pair
+ */
+const calculateMapCenterForRoute = (polyline) => {
   const origin = polyline[0].split(',').map(x => parseFloat(x))
   const destination = polyline[polyline.length - 1].split(',').map(x => parseFloat(x))
 
@@ -171,12 +190,13 @@ const calculateMapCenterForRoute = (polyline, route) => {
   return centerPoint.reverse().join(',')
 }
 
-// A comma-separated coordinate span that indicates the
-// amount of the map to display around the maps center.
-// The latitude must be in the range of (0, 90) ,
-// and the longitude must be in the range (0, 180).
-// The latitude and longitude delta parameters must
-// be positive numbers; negative numbers are treated as 0.
+/**
+ * Calculates the radius of map to show around center point.
+ * Uses the route to ensure that entire route length is
+ * included in the map.
+ * @param {string} center Center coordinate
+ * @param {mapkit.Route} route Route to calculate span for
+ */
 const calculateMapSpanForRoute = (center, route) => {
   let span = [0, 0]
   center = center.split(',')
@@ -206,6 +226,11 @@ const calculateMapSpanForRoute = (center, route) => {
   return span.join(',')
 }
 
+/**
+ * MapKit JS compatible URL encoding
+ * @param {Object} unencodedObject Unencoded Object containing URL parameters
+ * @returns {string} Encoded URL parameters
+ */
 const appleCompatibleUrlEncodingPleaseSendHelp = (unencodedObject) => {
   let encodedString = ''
 
@@ -226,6 +251,10 @@ const appleCompatibleUrlEncodingPleaseSendHelp = (unencodedObject) => {
   return encodedString
 }
 
+/**
+ * Generates a signed request URL for a MapKit snapshot.
+ * @param {string} params Snapshot parameters
+ */
 const signRequest = params => {
   const snapshotPath = `/api/v1/snapshot?${params}`
   const completePath = `${snapshotPath}&teamId=${MAPKIT_TEAMID}&keyId=${MAPKIT_KEYID}`
@@ -239,6 +268,11 @@ const signRequest = params => {
 // ///////////////////////////////////////////////////////////////////// //
 // Discord
 
+/**
+ * Displays a MapKit JS route in a Discord Embed.
+ * @param {mapkit.Route} route Route to display in embed
+ * @param {Discord.MessageEmbed} embed Embed to display route in
+ */
 const showRouteInEmbed = async (route, embed) => {
   embed.setTitle(route.name + ' to ' + embed.fields[1].value)
   embed.setDescription('')
@@ -255,11 +289,11 @@ const showRouteInEmbed = async (route, embed) => {
 
   const polyline = route.polyline.points.map((coordinate) => {
     if (!coordinate.latitude || !coordinate.longitude) return
-    return `${coordinate.latitude},${coordinate.longitude}` // Convert MapKit coordinate to polyline coordinate
+    return `${coordinate.latitude},${coordinate.longitude}` // Convert MapKit coordinate to polyline coordinate (string-based)
   }).filter((_, index) => {
     return index % 4 === 0 // Only keep 1/4th of the points to fit within URL lengths
   })
-  const mapCenter = calculateMapCenterForRoute(polyline, route)
+  const mapCenter = calculateMapCenterForRoute(polyline)
 
   const parameters = appleCompatibleUrlEncodingPleaseSendHelp({
     center: mapCenter,
@@ -302,17 +336,18 @@ client.on('message', async message => {
   const originFirst = nlp(message.content).match('from [<origin>*] to [<destination>*]').groups()
 
   /* eslint-disable padded-blocks */
-  if (destinationFirst.destination || destinationFirst.origin) {
+  if (destinationFirst.destination && destinationFirst.origin) {
     destination = destinationFirst.destination.toTitleCase().text().trim()
     origin = destinationFirst.origin.toTitleCase().text().trim()
 
-  } else if (originFirst.origin || originFirst.destination) {
+  } else if (originFirst.origin && originFirst.destination) {
     origin = originFirst.origin.toTitleCase().text().trim()
     destination = originFirst.destination.toTitleCase().text().trim()
 
   } else return
   /* eslint-enable padded-blocks */
 
+  // Remove any question marks from string
   origin.replace('?', '')
   destination.replace('?', '')
 
@@ -329,7 +364,7 @@ client.on('message', async message => {
       reply.edit(embed).catch(console.error)
       message.channel.stopTyping()
     }).catch(error => {
-      error = error.toString().replace(/http\S+/, '[redacted]')
+      error = error.toString().replace(/http\S+/, '[redacted]') // Remove any URLs in error message as they can surpass the Discord length limit
       console.error(error)
       embed.setDescription('Error occured! ' + error)
       embed.setColor('RED')
