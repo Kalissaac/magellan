@@ -273,7 +273,7 @@ const showRouteInEmbed = async (route, embed) => {
   const requestURL = `https://snapshot.apple-mapkit.com${signRequest(parameters)}`
   const imageResponse = await fetch(requestURL, { method: 'GET' })
   if (imageResponse.ok) {
-    const imageLink = await imgur.uploadUrl(requestURL, 'b3ISHtJ').catch(console.error)
+    const imageLink = await imgur.uploadUrl(requestURL, process.env.IMGUR_ALBUMID).catch(console.error)
     console.log(imageLink.data.link)
     embed.setImage(imageLink.data.link)
     embed.setDescription(`[Open in Maps](http://maps.apple.com/?saddr=${encodeURIComponent(embed.fields[0].value)}&daddr=${encodeURIComponent(embed.fields[1].value)}&dirflg=d) or [View Full Image](${imageLink.data.link})`)
